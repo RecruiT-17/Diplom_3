@@ -10,6 +10,7 @@ import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import ru.stellar.api.StellarBurgersApiClient;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,6 +23,7 @@ import java.util.Properties;
 public abstract class BaseTest {
 
     protected WebDriver driver;
+    protected StellarBurgersApiClient apiClient;   // ← НОВОЕ
     protected static Properties config = new Properties();
 
     private static final String YANDEX_DRIVER_PATH =
@@ -32,7 +34,6 @@ public abstract class BaseTest {
                 .getClassLoader()
                 .getResourceAsStream("driver-config.properties")) {
             if (in != null) {
-                // Читаем в UTF-8 на случай русских комментариев в файле
                 config.load(new InputStreamReader(in, StandardCharsets.UTF_8));
             }
         } catch (IOException e) {
@@ -42,6 +43,8 @@ public abstract class BaseTest {
 
     @Before
     public void setUp() {
+        apiClient = new StellarBurgersApiClient();   // ← НОВОЕ
+
         String browser = System.getProperty("browser", "chrome").toLowerCase();
         Allure.parameter("Браузер", browser);
 
@@ -58,9 +61,7 @@ public abstract class BaseTest {
 
     private WebDriver createChromeDriver() {
         System.clearProperty("webdriver.chrome.driver");
-
         WebDriverManager.chromedriver().setup();
-
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--remote-allow-origins=*");
         return new ChromeDriver(options);
@@ -83,7 +84,6 @@ public abstract class BaseTest {
         }
 
         System.setProperty("webdriver.chrome.driver", YANDEX_DRIVER_PATH);
-
         ChromeOptions options = new ChromeOptions();
         options.setBinary(yandexPath);
         options.addArguments("--remote-allow-origins=*");

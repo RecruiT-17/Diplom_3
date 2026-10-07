@@ -11,4 +11,8 @@ public class UserGenerator {
     public static String randomName() {
         return "TestUser_" + UUID.randomUUID().toString().substring(0, 6);
     }
+
+    public static String randomPassword() {
+        return "pass_" + UUID.randomUUID().toString().substring(0, 6);
+    }
 }

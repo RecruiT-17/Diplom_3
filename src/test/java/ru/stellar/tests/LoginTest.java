@@ -4,31 +4,35 @@ import io.qameta.allure.Description;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Feature;
 import io.qameta.allure.junit4.DisplayName;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import ru.stellar.base.BaseTest;
-import ru.stellar.pages.*;
-import ru.stellar.utils.UserGenerator;
+import ru.stellar.pages.ForgotPasswordPage;
+import ru.stellar.pages.LoginPage;
+import ru.stellar.pages.MainPage;
+import ru.stellar.pages.RegisterPage;
+import ru.stellar.utils.UserFixture;
 
 @Epic("Stellar Burgers")
 @Feature("Вход в аккаунт")
 public class LoginTest extends BaseTest {
 
-    private String email;
-    private String password;
+    private UserFixture user;
 
     @Before
-    public void createUser() {
-        email = UserGenerator.randomEmail();
-        password = "password123";
-
-        MainPage mainPage = new MainPage(driver);
-        LoginPage loginPage = mainPage.clickLoginButton();
-        RegisterPage registerPage = loginPage.clickRegisterLink();
-        registerPage.register(UserGenerator.randomName(), email, password);
+    public void createUserViaApi() {
+        user = UserFixture.createUnique(apiClient);
 
         driver.get(config.getProperty("base.url"));
+    }
+
+    @After
+    public void deleteUserViaApi() {
+        if (user != null) {
+            user.delete(apiClient);
+        }
     }
 
     @Test
@@ -37,7 +41,7 @@ public class LoginTest extends BaseTest {
     public void loginViaMainPageButtonTest() {
         MainPage mainPage = new MainPage(driver);
         LoginPage loginPage = mainPage.clickLoginButton();
-        MainPage afterLogin = loginPage.login(email, password);
+        MainPage afterLogin = loginPage.login(user.email, user.password);
 
         Assert.assertTrue("После входа должна открыться главная страница",
                 afterLogin.isConstructorDisplayed());
@@ -51,7 +55,7 @@ public class LoginTest extends BaseTest {
         mainPage.clickPersonalAccount();
 
         LoginPage loginPage = new LoginPage(driver);
-        MainPage afterLogin = loginPage.login(email, password);
+        MainPage afterLogin = loginPage.login(user.email, user.password);
 
         Assert.assertTrue("После входа должна открыться главная страница",
                 afterLogin.isConstructorDisplayed());
@@ -65,7 +69,7 @@ public class LoginTest extends BaseTest {
         LoginPage loginPage = mainPage.clickLoginButton();
         RegisterPage registerPage = loginPage.clickRegisterLink();
         LoginPage loginFromRegister = registerPage.clickLoginLink();
-        MainPage afterLogin = loginFromRegister.login(email, password);
+        MainPage afterLogin = loginFromRegister.login(user.email, user.password);
 
         Assert.assertTrue("После входа должна открыться главная страница",
                 afterLogin.isConstructorDisplayed());
@@ -79,7 +83,7 @@ public class LoginTest extends BaseTest {
         LoginPage loginPage = mainPage.clickLoginButton();
         ForgotPasswordPage forgotPage = loginPage.clickForgotPasswordLink();
         LoginPage loginFromForgot = forgotPage.clickLoginLink();
-        MainPage afterLogin = loginFromForgot.login(email, password);
+        MainPage afterLogin = loginFromForgot.login(user.email, user.password);
 
         Assert.assertTrue("После входа должна открыться главная страница",
                 afterLogin.isConstructorDisplayed());
